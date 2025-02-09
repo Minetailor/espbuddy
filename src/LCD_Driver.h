@@ -1,15 +1,13 @@
 /*****************************************************************************
-* | File        :   DEV_Config.c
+* | File        :   LCD_Driver.h
 * | Author      :   Waveshare team
-* | Function    :   Hardware underlying interface
+* | Function    :   Electronic paper driver
 * | Info        :
-*                Used to shield the underlying layers of each master 
-*                and enhance portability
 *----------------
 * | This version:   V1.0
-* | Date        :   2018-11-22
-* | Info        :
-
+* | Date        :   2018-11-18
+* | Info        :   
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documnetation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -29,35 +27,27 @@
 # THE SOFTWARE.
 #
 ******************************************************************************/
-// #include <stdint.h>
-#include <esp32-hal-spi.h>
-#include "DEV_Config_h.ino"
+
+#ifndef __LCD_DRIVER_H
+#define __LCD_DRIVER_H
 
 
+#include "LCD_Driver_Contract.h"
+
+#define LCD_WIDTH   240 //LCD width
+#define LCD_HEIGHT  240 //LCD height
 
 
+void LCD_WriteData_Byte(UBYTE da); 
+void LCD_WriteData_Word(UWORD da);
+void LCD_WriteReg(UBYTE da);
 
-void GPIO_Init()
-{
-  pinMode(DEV_CS_PIN, OUTPUT);
-  pinMode(DEV_RST_PIN, OUTPUT);
-  pinMode(DEV_DC_PIN, OUTPUT);
-  pinMode(DEV_BL_PIN, OUTPUT);
-  analogWrite(DEV_BL_PIN,140);
- }
-void Config_Init()
- {
+void LCD_SetCursor(UWORD x1, UWORD y1, UWORD x2,UWORD y2);
+void LCD_SetUWORD(UWORD x, UWORD y, UWORD Color);
 
-  GPIO_Init();
-  
-  //Serial
-  Serial.begin(115200);
-  
-  //SPI
-  // SPI.setDataMode(SPI_MODE3);
-  // SPI.setBitOrder(MSBFIRST);
+void LCD_Init(void);
+void LCD_SetBacklight(UWORD Value);
+void LCD_Clear(UWORD Color);
+void LCD_ClearWindow(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend, UWORD UWORD);
 
-  fspi = new SPIClass(HSPI); // HSPI and FSPI work
-  fspi->begin(FSPI_CLK,-1,FSPI_MOSI, -1);
-  fspi->beginTransaction(SPISettings(3000000 , MSBFIRST, SPI_MODE3));
-  }
+#endif

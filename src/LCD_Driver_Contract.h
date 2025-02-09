@@ -1,13 +1,16 @@
+
 /*****************************************************************************
-* | File        :   LCD_Driver.h
+* | File        :   DEV_Config.c
 * | Author      :   Waveshare team
-* | Function    :   Electronic paper driver
+* | Function    :   Hardware underlying interface
 * | Info        :
+*                Used to shield the underlying layers of each master 
+*                and enhance portability
 *----------------
 * | This version:   V1.0
-* | Date        :   2018-11-18
-* | Info        :   
-#
+* | Date        :   2018-11-22
+* | Info        :
+
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documnetation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -27,25 +30,47 @@
 # THE SOFTWARE.
 #
 ******************************************************************************/
-#ifndef __LCD_DRIVER_H
-#define __LCD_DRIVER_H
+#ifndef _DEV_CONFIG_H_
+#define _DEV_CONFIG_H_
 
-#include "DEV_Config_h.ino"
+#include <stdint.h>
+// #include <stdio.h>
+#include <Arduino.h>
+#include "IO.h"
 
-#define LCD_WIDTH   240 //LCD width
-#define LCD_HEIGHT  240 //LCD height
+#define DEV_CS_PIN  FSPI_CS_PIN
+#define DEV_DC_PIN  FSPI_DC_PIN
+#define DEV_RST_PIN FSPI_RST_PIN
+#define DEV_BL_PIN  FSPI_BL_PIN
+
+#define UBYTE   uint8_t
+#define UWORD   uint16_t
+#define UDOUBLE uint32_t
+
+/**
+ * GPIO read and write
+**/
+#define DEV_Digital_Write(_pin, _value) digitalWrite(_pin, _value == 0? 0:1)
+#define DEV_Digital_Read(_pin) digitalRead(_pin)
 
 
-void LCD_WriteData_Byte(UBYTE da); 
-void LCD_WriteData_Word(UWORD da);
-void LCD_WriteReg(UBYTE da);
+/**
+ * SPI
+**/
+#define DEV_SPI_WRITE(_dat) fspi_transfer(_dat)
 
-void LCD_SetCursor(UWORD x1, UWORD y1, UWORD x2,UWORD y2);
-void LCD_SetUWORD(UWORD x, UWORD y, UWORD Color);
+/**
+ * delay x ms
+**/
+#define DEV_Delay_ms(__xms)    delay(__xms)
 
-void LCD_Init(void);
-void LCD_SetBacklight(UWORD Value);
-void LCD_Clear(UWORD Color);
-void LCD_ClearWindow(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend, UWORD UWORD);
+/**
+ * PWM_BL
+**/
+#define  DEV_Set_BL(_Pin, _Value)  analogWrite(_Pin, _Value)
 
+/*-----------------------------------------------------------------------------*/
+ void Config_Init();
 #endif
+
+
