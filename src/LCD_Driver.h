@@ -34,8 +34,8 @@
 
 #include "LCD_Driver_Contract.h"
 
-#define LCD_WIDTH   240 //LCD width
-#define LCD_HEIGHT  240 //LCD height
+#define LCD_WIDTH   170 //LCD width
+#define LCD_HEIGHT  320 //LCD height
 
 
 void LCD_WriteData_Byte(UBYTE da); 

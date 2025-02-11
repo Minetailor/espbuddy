@@ -55,7 +55,7 @@ void displayBMP(const char *path, uint16_t x, uint16_t y) {
     Serial.println(col_size);
   
     //start drawing
-    LCD_SetCursor(x, y, x+width,y+height);
+    LCD_SetCursor(x, y, x+width-1,y+height-1);
     // convert pixel data
     while (f.available()) {
       size_t num_bytes = f.read(buf, 4); // size dependent on bits per pixel

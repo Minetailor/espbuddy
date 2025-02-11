@@ -93,82 +93,86 @@ void LCD_Init(void)
 {
   LCD_Reset();
 
-  //************* Start Initial Sequence **********// 
-  LCD_WriteReg(0x36); 
-  LCD_WriteData_Byte(0x00);
+    //************* Start Initial Sequence **********// 
+    
+    LCD_WriteReg(0x36);
+    LCD_WriteData_Byte(0x40);
 
-  LCD_WriteReg(0x3A); 
-  LCD_WriteData_Byte(0x05);
+    LCD_WriteReg(0x3A);
+    LCD_WriteData_Byte(0x55);
 
-  LCD_WriteReg(0xB2);
-  LCD_WriteData_Byte(0x0C);
-  LCD_WriteData_Byte(0x0C);
-  LCD_WriteData_Byte(0x00);
-  LCD_WriteData_Byte(0x33);
-  LCD_WriteData_Byte(0x33);
+    LCD_WriteReg(0xB2);
+    LCD_WriteData_Byte(0x0C);
+    LCD_WriteData_Byte(0x0C);
+    LCD_WriteData_Byte(0x00);
+    LCD_WriteData_Byte(0x33);
+    LCD_WriteData_Byte(0x33);
 
-  LCD_WriteReg(0xB7); 
-  LCD_WriteData_Byte(0x35);  
+    LCD_WriteReg(0xB7);
+    LCD_WriteData_Byte(0x35);
 
-  LCD_WriteReg(0xBB);
-  LCD_WriteData_Byte(0x19);
+    LCD_WriteReg(0xBB);
+    LCD_WriteData_Byte(0x13);
 
-  LCD_WriteReg(0xC0);
-  LCD_WriteData_Byte(0x2C);
+    LCD_WriteReg(0xC0);
+    LCD_WriteData_Byte(0x2C);
 
-  LCD_WriteReg(0xC2);
-  LCD_WriteData_Byte(0x01);
+    LCD_WriteReg(0xC2);
+    LCD_WriteData_Byte(0x01);
 
-  LCD_WriteReg(0xC3);
-  LCD_WriteData_Byte(0x12);   
+    LCD_WriteReg(0xC3);
+    LCD_WriteData_Byte(0x0B);
 
-  LCD_WriteReg(0xC4);
-  LCD_WriteData_Byte(0x20);  
+    LCD_WriteReg(0xC4);
+    LCD_WriteData_Byte(0x20);
 
-  LCD_WriteReg(0xC6); 
-  LCD_WriteData_Byte(0x0F);    
+    LCD_WriteReg(0xC6);
+    LCD_WriteData_Byte(0x0F);
 
-  LCD_WriteReg(0xD0); 
-  LCD_WriteData_Byte(0xA4);
-  LCD_WriteData_Byte(0xA1);
+    LCD_WriteReg(0xD0);
+    LCD_WriteData_Byte(0xA4);
+    LCD_WriteData_Byte(0xA1);
 
-  LCD_WriteReg(0xE0);
-  LCD_WriteData_Byte(0xD0);
-  LCD_WriteData_Byte(0x04);
-  LCD_WriteData_Byte(0x0D);
-  LCD_WriteData_Byte(0x11);
-  LCD_WriteData_Byte(0x13);
-  LCD_WriteData_Byte(0x2B);
-  LCD_WriteData_Byte(0x3F);
-  LCD_WriteData_Byte(0x54);
-  LCD_WriteData_Byte(0x4C);
-  LCD_WriteData_Byte(0x18);
-  LCD_WriteData_Byte(0x0D);
-  LCD_WriteData_Byte(0x0B);
-  LCD_WriteData_Byte(0x1F);
-  LCD_WriteData_Byte(0x23);
+    LCD_WriteReg(0xD6);
+    LCD_WriteData_Byte(0xA1);
 
-  LCD_WriteReg(0xE1);
-  LCD_WriteData_Byte(0xD0);
-  LCD_WriteData_Byte(0x04);
-  LCD_WriteData_Byte(0x0C);
-  LCD_WriteData_Byte(0x11);
-  LCD_WriteData_Byte(0x13);
-  LCD_WriteData_Byte(0x2C);
-  LCD_WriteData_Byte(0x3F);
-  LCD_WriteData_Byte(0x44);
-  LCD_WriteData_Byte(0x51);
-  LCD_WriteData_Byte(0x2F);
-  LCD_WriteData_Byte(0x1F);
-  LCD_WriteData_Byte(0x1F);
-  LCD_WriteData_Byte(0x20);
-  LCD_WriteData_Byte(0x23);
+    LCD_WriteReg(0xE0);
+    LCD_WriteData_Byte(0x00);
+    LCD_WriteData_Byte(0x03);
+    LCD_WriteData_Byte(0x07);
+    LCD_WriteData_Byte(0x08);
+    LCD_WriteData_Byte(0x07);
+    LCD_WriteData_Byte(0x15);
+    LCD_WriteData_Byte(0x2A);
+    LCD_WriteData_Byte(0x44);
+    LCD_WriteData_Byte(0x42);
+    LCD_WriteData_Byte(0x0A);
+    LCD_WriteData_Byte(0x17);
+    LCD_WriteData_Byte(0x18);
+    LCD_WriteData_Byte(0x25);
+    LCD_WriteData_Byte(0x27);
 
-  LCD_WriteReg(0x21); 
+    LCD_WriteReg(0xE1);
+    LCD_WriteData_Byte(0x00);
+    LCD_WriteData_Byte(0x03);
+    LCD_WriteData_Byte(0x08);
+    LCD_WriteData_Byte(0x07);
+    LCD_WriteData_Byte(0x07);
+    LCD_WriteData_Byte(0x23);
+    LCD_WriteData_Byte(0x2A);
+    LCD_WriteData_Byte(0x43);
+    LCD_WriteData_Byte(0x42);
+    LCD_WriteData_Byte(0x09);
+    LCD_WriteData_Byte(0x18);
+    LCD_WriteData_Byte(0x17);
+    LCD_WriteData_Byte(0x25);
+    LCD_WriteData_Byte(0x27);
 
-  LCD_WriteReg(0x11); 
+    LCD_WriteReg(0x21);
 
-  LCD_WriteReg(0x29); 
+    LCD_WriteReg(0x11);
+    delay(120);
+    LCD_WriteReg(0x29); 
   LCD_SetBacklight(140);
 } 
 
@@ -183,16 +187,29 @@ parameter :
 void LCD_SetCursor(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD  Yend)
 { 
   LCD_WriteReg(0x2a);
-  LCD_WriteData_Byte(Xstart>>8);
-  LCD_WriteData_Byte(Xstart);
-  LCD_WriteData_Byte(Xend >>8);
-  LCD_WriteData_Byte(Xend );
+  LCD_WriteData_Byte(Xstart+35>>8);
+  LCD_WriteData_Byte(Xstart+35);
+  LCD_WriteData_Byte(Xend+35>>8);
+  LCD_WriteData_Byte(Xend+35);
 
   LCD_WriteReg(0x2b);
   LCD_WriteData_Byte(Ystart>>8);
   LCD_WriteData_Byte(Ystart);
   LCD_WriteData_Byte(Yend>>8);
   LCD_WriteData_Byte(Yend);
+
+  // set the X coordinates
+  // LCD_WriteReg(0x2A);
+  // LCD_WriteData_Byte(Ystart >> 8);
+  // LCD_WriteData_Byte(Ystart);
+  // LCD_WriteData_Byte(Yend >> 8);
+  // LCD_WriteData_Byte(Yend);
+  // // set the Y coordinates
+  // LCD_WriteReg(0x2B);
+  // LCD_WriteData_Byte(Xstart + 35>> 8);
+  // LCD_WriteData_Byte(Xstart + 35);
+  // LCD_WriteData_Byte(Xend + 35 >> 8);
+  // LCD_WriteData_Byte(Xend + 35);
 
   LCD_WriteReg(0x2C);
 }
