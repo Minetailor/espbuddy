@@ -17,7 +17,7 @@
 
 #define BUTTON1 40
 #define BUTTON2 38
-#define BUTTON3 36
+#define BUTTON3 12
 #define BUTTON4 34
 
 

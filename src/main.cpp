@@ -10,9 +10,11 @@
 
 // Sd2Card card;
 
-#define DEBUG
+// #define DEBUG
 
 #define SAVE_PERIOD 60000
+
+
 
 void setup() {
   //   if (SD.exists("/pixil-frame-0.bmp")) Serial.println("IT EXISTS");
@@ -25,9 +27,9 @@ void setup() {
 
   displayBMP("/scenery.bmp",0,0);
 
-  // #ifdef DEBUG
-  // while (!Serial) {;}
-  // #endif
+  #ifdef DEBUG
+  while (!Serial) {;}
+  #endif
 
 
   // displayBMP("/pixil-frame-0.bmp",0,0);
@@ -67,6 +69,8 @@ typedef struct buttons{
   bool button3down;
   bool button4down;
 } Controls;
+
+Controls g_controls; // global controls variable
 
 #define HUNGER_COOLDOWN 1000*60*5 // can feed every 5 minutes
 #define HAPPINESS_COOLDOWN 1000*60*2 // can play every 2 minutes
@@ -196,9 +200,9 @@ Buddy load_buddy(){
     return b;
   }
 
-  release_sd();
-  Buddy o = Buddy(0,0,0,'0');
-  return o;
+  // release_sd();
+  // // Buddy o = Buddy(0,0,0,'0');
+  // return o;
 
   File f = sd.open("/data/buddy.dat");
   f.read(buf.data, sizeof(buf));
@@ -216,11 +220,22 @@ void save_buddy(Buddy bud) {
 
   File f = sd.open("/data/buddy.dat", FILE_WRITE);
   f.seek(0);
+  // f.write(bud.age,4);
+  // f.write(bud.hunger);
+  // f.write(bud.happiness);
+  // f.write(bud.skin);
   buf.unpack.age = bud.age;
   buf.unpack.happiness = bud.happiness;
   buf.unpack.hunger = bud.hunger;
   buf.unpack.skin = bud.skin;
-  f.write(buf.data, sizeof(buf));
+
+
+  Serial.print("Writing: \n");
+  for (int i = 0; i < 16; i++) {
+    Serial.println(buf.data[i]);
+  }
+
+  f.write(buf.data, 16);
   f.close();
   release_sd();
 
@@ -229,14 +244,15 @@ void save_buddy(Buddy bud) {
 enum Menus {
   NO_UPDATE,
   STARTUP,
-  MAIN_MENU
+  MAIN_MENU,
+  GALLERY
 };
 
 class State {
   public:
     virtual void display() {};
     // void handleInputs();
-    virtual Menus update(Controls controls) {
+    virtual Menus update(Controls controls, unsigned long dtime) {
       Serial.println("Running Wrong State");
       return NO_UPDATE;
       };
@@ -294,22 +310,27 @@ class Main_Menu: public State {
       path.concat(emotion);
       
 
-      displayBMP(path.c_str(),0,40);
+      displayBMP(path.c_str(),0,0);
 
     };
 
-    Menus update(Controls controls) override {
+    Menus update(Controls controls, unsigned long dtime) override {
       if (new_instance) display();
       new_instance = false;
       if (prev_age != buddy->getState()) display(); // change in buddy
       if (prev_emo != buddy->getEmotion()) display(); // change in buddy
 
-      if (controls.button1down) {
+      if (controls.button2down) {
         buddy->addHunger(3);
       }
 
-      if (controls.button2down) {
+      if (controls.button3down) {
         buddy->addHappiness(3);
+      }
+      // Serial.println(controls.button4down);
+      if (controls.button4down) {
+        //go to gallery
+        return GALLERY;
       }
 
       return NO_UPDATE;
@@ -318,29 +339,124 @@ class Main_Menu: public State {
 
 };
 
+#define GALLERY_INPUT_TIMEOUT 2 //just 2 second roughly
+
+class Gallery: public State {
+  public:
+    int input_timeout = GALLERY_INPUT_TIMEOUT;
+    int gallery_item = 0;
+    int last_gallery_item = -1;
+    bool new_instance = true;
+    Gallery () {
+      new_instance = true;
+    };
+
+    void display() override {
+      
+      if (last_gallery_item != gallery_item) {
+        if (new_instance) {
+          displayBMP("/gallery/gallery_frame.bmp",0,0);
+          new_instance = false;
+        }
+        String s = String("/gallery/");
+        char item_num[100];
+        sprintf(item_num, "%d", gallery_item);
+        s.concat(String(item_num));
+        s.concat(".bmp");
+        displayBMP(s.c_str(), 0, 30);
+        last_gallery_item = gallery_item;
+      }
+    };
+    Menus update(Controls controls, unsigned long dtime) override {
+      if (last_gallery_item != gallery_item) display();
+
+      input_timeout -= dtime;
+      // input control
+      if (input_timeout <= 0 ) {
+        input_timeout = 0;
+
+        if (controls.button4down) {
+          input_timeout = GALLERY_INPUT_TIMEOUT;
+          gallery_item += 1;
+          if (gallery_item < 0) gallery_item = 0; // catches overflows but that won't happen
+          return NO_UPDATE;
+        }
+        if (controls.button3down) {
+          input_timeout = GALLERY_INPUT_TIMEOUT;
+          gallery_item -= 1;
+          if (gallery_item < 0) gallery_item = 0;
+          return NO_UPDATE;
+        }
+
+        if (controls.button2down) {
+          input_timeout = GALLERY_INPUT_TIMEOUT;
+          return MAIN_MENU;
+        }
+      }
+      
+
+      return NO_UPDATE;
+    };
+
+  };
 
 
-Controls get_inputs() {
-  Controls controls;
-  controls.button1down = digitalRead(BUTTON1);
-  controls.button2down = digitalRead(BUTTON2);
-  controls.button3down = digitalRead(BUTTON3);
-  controls.button4down = digitalRead(BUTTON4);
+#define BUTTON_TIMEOUT 250 // 1/4 a second
+unsigned long button1_timer = 0;
+unsigned long button2_timer = 0;
+unsigned long button3_timer = 0;
+unsigned long button4_timer = 0;
 
-  if (controls.button1down) {
+void get_inputs(Controls *controls, unsigned long dtime) {
+  int b1 = digitalRead(BUTTON1);
+  int b2 = digitalRead(BUTTON2);
+  int b3 = digitalRead(BUTTON3);
+  int b4 = digitalRead(BUTTON4);
+
+  controls->button1down = b1;
+  controls->button2down = b2;
+  controls->button3down = b3;
+  controls->button4down = b4;
+
+  // Basic debouncing
+
+  if (controls->button1down) {
+    // if (!b1 && (button1_timer > BUTTON_TIMEOUT)) {
+    //   controls->button1down = b1;
+    //   button1_timer = 0;
+    // }
+    // button1_timer += dtime;
     Serial.println("Button 1 Down");
-  } 
-  if (controls.button2down) {
-    Serial.println("Button 2 Down");
-  }
-  if (controls.button3down) {
-    Serial.println("Button 3 Down");
-  } 
-  if (controls.button4down) {
-    Serial.println("Button 4 Down");
-  } 
+  } else controls->button1down = b1;
 
-  return controls;
+  if (controls->button2down) {
+    // if (!b2 && (button2_timer > BUTTON_TIMEOUT)) {
+    //   controls->button2down = b2;
+    //   button2_timer = 0;
+    // }
+    // button2_timer += dtime;
+    Serial.println("Button 2 Down");
+  } else controls->button2down = b2;
+
+  if (controls->button1down) {
+    // if (!b3 && (button3_timer > BUTTON_TIMEOUT)) {
+    //   controls->button3down = b3;
+    //   button3_timer = 0;
+    // }
+    // button3_timer += dtime;
+    Serial.println("Button 3 Down");
+  } else controls->button3down = b3;
+
+  if (controls->button4down) {
+    // if (!b4 && (button4_timer > BUTTON_TIMEOUT)) {
+    //   controls->button4down = b4;
+    //   button4_timer = 0;
+    // }
+    // button4_timer += dtime;
+    Serial.println("Button 4 Down");
+  } else controls->button4down = b4;
+
+
 }
 
 
@@ -381,13 +497,20 @@ void loop() {
     s = new Main_Menu(&b);
   }
 
-  Controls controls = get_inputs();
-  s->update(controls);
+  get_inputs(&g_controls, dtime);
+  menu_select = s->update(g_controls, dtime);
 
-  // switch (menu_select) {
-  //   case STARTUP:
-      
-  //   case MAIN_MENU:
+  switch (menu_select) {
+    case MAIN_MENU:
+      s = new Main_Menu(&b);
+      break;
+    case GALLERY:
+      s = new Gallery();
+      break;
+    case NO_UPDATE:
+      //do nothing
+      break;
+  }
       
 
   //     break;
